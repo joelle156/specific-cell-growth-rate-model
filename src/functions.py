@@ -92,7 +92,7 @@ def prediction_results(y_test, y_predict, filename="predicted_rate.csv"):
         "Predicted Growth Rate[d^-1]": y_predict
     })
 
-    export_results = os.path.join("datasets", filename)
+    export_results = os.path.join("tables", filename)
     predict_df.to_csv(export_results, index=False)
 
     return export_results

@@ -29,7 +29,7 @@ class Batch:
         knn_rmse, knn_r2, knn_pred = sf.evaluate_model(best_knn_model, x_test, y_test)
         print(f"KNN Test RMSE: {knn_rmse:.4f} | R2: {knn_r2:.4f}")
 
-        # Exports CSV file with predicted values and actual values #
+        # Names CSV file with predicted values and actual values #
         sf.prediction_results(y_test, poly_pred, filename = "poly_prediction.csv")
         sf.prediction_results(y_test, knn_pred, filename = "knn_prediction.csv")
 
