@@ -1,6 +1,5 @@
 # Cell Growth Machine Learning Model
 
----
 The objective of this project was to develop a **machine learning model** using Python 
 which can **predict the specific growth rate of cells** based on **culture conditions**, 
 specifically the temperature, pH, glucose concentration and lactate concentration.
@@ -10,7 +9,6 @@ Overall the model provides researchers with a greater understanding the effects 
 
 ## Highlights
 
----
 - Executes automated machine learning pipelines for cell growth predictions.
 - Optimizes hyperparameters using k-fold cross-validation through GridSearchCV.
 - Evaluates regression models using root mean squared error metrics.
@@ -19,7 +17,6 @@ Overall the model provides researchers with a greater understanding the effects 
 
 ## Environment
 
----
 - Python (v3.14.7)
 - pandas (v3.0.6)
 - matplotlib (v3.11.0)
@@ -28,7 +25,6 @@ Overall the model provides researchers with a greater understanding the effects 
 
 ## Code Design
 
----
 ### Data Loading
 The first stage of the workflow involves importing the cell culture dataset from a CSV file using the `data_loading` function. 
 The data is structured into NumPy arrays for compatibility with the `Scikit-learn` library, and is also split into training and testing subsets using an 80/20 train-test split. 
@@ -54,6 +50,7 @@ In order to maximize performance and prevent overfitting or underfitting of the 
 To achieve this, Grid Search Cross-Validation (`GridSearchCV`) is employed to train the models.
 
 This is a process which involves searching through a defined grid of configuration variables, trains and evaluates the model for every combination of the hyperparameters using cross-validation to find the optimal hyperparameters. 
+The data is split into three sets to perform hyperparameter optimization: training, validation and test sets.
 For the polynomial regression pathway, the grid search identifies the optimal polynomial degree within a range of 1 to 5. 
 For KNN regression pathway, it tests varying odd numbers of neighbors (*k*) alongside uniform and distance weight controls. 
 This determines whether data points should be given equal weight or be weighted proportionally to the inverse of their spatial distance. 
@@ -70,28 +67,37 @@ These figures allow for the visualization of when overfitting and underfitting o
 This is the final output of the pipeline and the final stage of the workflow, providing the user the information and data plots needed to select the best model architecture for predicting cell growth rates.
 ## Analysis
 
----
 ### Model Selection and Justification
-The objective of this machine learning pipeline was to predict the specific growth rate of cells based on four cell culture parameters: temperature, pH, glucose concentration and lactate concentration. \
+The objective of this machine learning pipeline was to predict the specific growth rate of cells based on four cell culture parameters: temperature, pH, glucose concentration and lactate concentration.
 To achieve this, two model architectures were evaluated: a Polynomial Regression model and a *k*-Nearest Neighbors (KNN) Regression model. 
 
 Based on the hyperparameter tuning and cross-validation results, the **Polynomial Regression with a degree of 2** was selected as the optimal regression model. 
 
-During the evaluation phase, the degree-2 Polynomial model achieved a **RMSE** of 0.1570 and an **R<sup>2</sup>** score of 0.3841. 
-As demonstrated in `validation_curve_polynomial.png`, a polynomial degree of 2 provided the lowest validation error. 
+During the evaluation phase, the 2nd degree Polynomial model achieved a **RMSE** of 0.1570 and an **R<sup>2</sup>** score of 0.3841. 
+A validation curve, displayed below in `validation_curve_polynomial.png`, helps to visualize the error associated with each polynomial degree.
+The plot illustrates that the RMSE is lowest for both the training set and validation data set at a polynomial degree of 2.
+Prior to this degree, the RMSE is higher for both curves, which represents underfitting.
 Increasing the polynomial degree to degrees  of 3, 4, and 5 resulted in severe overfitting, as the validation curves show the training error dropping toward zero but the validation error exponentially spiking. 
 
 ![Polynomial Validation Curve](figures/validation_curve_polynomial.png)
 
 On the other hand, the alternative KNN model was optimized at *k*=9 using distance-based weighting. 
-While this model successfully memorized the training data (as seen by the zero-error training line in `validation_curve_knn.png`), it **yielded a higher validation RMSE (0.1587) and a lower R<sup>2</sup> (0.3707)**. 
-Therefore, the degree-2 Polynomial model was chosen because it was able to better capture the cell growth process without severe overfitting or higher error as observed in the distance-weighted KNN algorithm.
+While this model successfully memorized the training data (as shown by the zero-error training line barely visible at the bottom of `validation_curve_knn.png`), it **yielded a higher validation RMSE (0.1587) and a lower R<sup>2</sup> (0.3707)**. 
+The optimized hyperparameter for the KNN model was found to be 9 for distance weighting. Prior to the *k*-value of 9, there is a large gap between the training and validation RMSE, indicating overfitting.
+The gap then narrows slightly, with the validation RMSE decreasing and the training RMSE staying constant at zero.
+Then comes the point at which the validation RMSE is at its lowest. This occurs at *k*=9. From then on the gap between the curves increases, resulting in overfitting. Therefore, *k*=9 is the optimal.
+The uniform weighting results in a similar *k*-value. The plot begins with a large gap between the validation and training RMSE curves, however the gap begins to narrow. The gap then continues to slowly narrow, approaching a gap of zero as higher and higher values of k are achieved.
+This is underfitting. The *k*-value is considered the point at which the validation RMSE is at its lowest, which occurs at *k*=10.
+Therefore, the 2nd degree Polynomial model was chosen because it was able to better capture the cell growth process without higher error as observed in the distance-weighted KNN algorithm.
 
 ![KNN Validation Curve](figures/validation_curve_knn.png)
 
 ### Disadvantages of the Polynomial Model
 All that being said, there are some disadvantages to the polynomial regression model. 
-In general these models are sensitive to outliers and so predictions outside the range of the training data tends to behave wildly. 
+The polynomial model can be considered a simpler model but still comes with certain benefits, The model is able to estimate values outside the range of the training data, whereas KNN models would default to the nearest neighbor.
+However, these models are still sensitive to outliers and so predictions outside the range of the training data tends to behave wildly. 
+This would be more of an issue had cross-validation not been used. In this way, the model's performance is evaluated across several folds and so there is less of a dependence on one split.
+The model is able to train on a wider range of data, reducing the possibility of outliers.
 Polynomial regression models also have a high risk of overfitting, especially at higher degrees as seen in the validation curve. 
 However, hyperparameter tuning is performed to offset this issue by keeping the degree low. Another limitation of this model is the R<sup>2</sup> score of 0.3841. 
 An R<sup>2</sup> score greater than zero indicates the model is better than predicting the mean, however the model is still only successfully explaining approximately 38%. 
