@@ -10,12 +10,12 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.linear_model import LinearRegression
 
 
-# For main.py #
+# For main.py, to calculate the optimal pH and temperature #
 def calculate_average(values):
     return sum(values) / len(values)
 
 
-# For classes.py #
+# For classes.py, model training #
 # loads and splits datas #
 def data_loading():
     df = pd.read_csv(os.path.join("datasets", "dataset_cell_growth_4factor.csv"))
@@ -30,7 +30,7 @@ def data_loading():
 
     return x_train, x_test, y_train, y_test
 
-
+# Polynomial model pipeline: includes preprocessing (standardization), and hyperparameter optimization (GridSearchCV) #
 def train_polynomial_model(x_train, y_train):
     poly_model = make_pipeline(
         StandardScaler(),
@@ -38,6 +38,7 @@ def train_polynomial_model(x_train, y_train):
         LinearRegression()
     )
 
+    # Polynomial degrees 1,2,3,4 and 5 were included in this model training #
     param_grid = dict(polynomialfeatures__degree=[i for i in range(1, 6)])
 
     poly_model_gscv = GridSearchCV(poly_model,
@@ -51,13 +52,14 @@ def train_polynomial_model(x_train, y_train):
     best_params = poly_model_gscv.best_params_
     return poly_model_gscv, best_params, best_model
 
-
+# KNN model training #
 def train_knn_model(x_train, y_train):
     knn_model = make_pipeline(
         StandardScaler(),
         KNeighborsRegressor()
     )
 
+    # Using GridSearchCV, k values of 3,5,7,9,11 and 15 were searched to find the optimal k #
     param_grid = dict(
         kneighborsregressor__n_neighbors=[3, 5, 7, 9, 11, 15],
         kneighborsregressor__weights=["uniform", "distance"],
@@ -75,7 +77,7 @@ def train_knn_model(x_train, y_train):
 
     return knn_model_gscv, best_params, best_model
 
-
+# Test fold of the workflow #
 def evaluate_model(best_model, x_test, y_test):
     y_predict = best_model.predict(x_test)
     rmse = np.sqrt(mean_squared_error(y_test, y_predict))
@@ -83,7 +85,7 @@ def evaluate_model(best_model, x_test, y_test):
 
     return rmse, r2, y_predict
 
-
+# Exports values predicted by the model #
 def prediction_results(y_test, y_predict, filename="predicted_rate.csv"):
     predict_df = pd.DataFrame({
         "Actual Growth Rate[d^-1]": y_test,
@@ -98,7 +100,6 @@ def prediction_results(y_test, y_predict, filename="predicted_rate.csv"):
 
 # Plot Formatting #
 COLORS = ["tab:blue", "tab:orange", "tab:green", "tab:purple"]
-LINESTYLES = ["-", "--", "-.", ":"]
 FIG_WIDTH = 14.39 / 2.54
 FIG_HEIGHT = 12.09 / 2.54
 
